@@ -3,7 +3,12 @@ const { Client, GatewayIntentBits } = require('discord.js');
 const cors = require('cors');
 
 const app = express();
-app.use(cors());
+
+// Autoriser votre site GitHub Pages
+app.use(cors({
+    origin: 'https://gabrielvoirin40-del.github.io'
+}));
+
 app.use(express.json());
 
 let bot = null;
