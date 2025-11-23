@@ -9,42 +9,57 @@ app.use(cors({
 
 app.use(express.json());
 
+const express = require('express');
+const cors = require('cors');
+const { Client } = require('discord.js-selfbot-v13');
+
+const app = express();
+
+app.use(cors({
+    origin: 'https://gabrielvoirin40-del.github.io'
+}));
+
+app.use(express.json());
+
+let client = null;
+
 app.post('/connect-bot', async (req, res) => {
     const { token } = req.body;
     
+    if (client) {
+        try { client.destroy(); } catch (e) {}
+    }
+    
     try {
-        // Vérifier le token via l'API Discord
-        const response = await fetch('https://discord.com/api/v10/users/@me', {
-            headers: {
-                'Authorization': token
-            }
+        client = new Client({ checkUpdate: false });
+        
+        client.on('ready', () => {
+            console.log(`✅ Connecté : ${client.user.tag}`);
         });
         
-        if (response.ok) {
-            const userData = await response.json();
-            
-            res.json({ 
-                success: true, 
-                botName: userData.username,
-                botId: userData.id
-            });
-        } else {
-            res.json({ 
-                success: false, 
-                message: 'Token invalide'
-            });
-        }
+        await client.login(token);
+        
+        await new Promise((resolve) => {
+            if (client.user) resolve();
+            else client.once('ready', resolve);
+        });
+        
+        res.json({ 
+            success: true, 
+            botName: client.user.username,
+            botId: client.user.id
+        });
         
     } catch (error) {
-        console.error('Erreur:', error.message);
+        console.error('❌ Erreur:', error.message);
         res.json({ 
             success: false, 
-            message: 'Erreur de connexion'
+            message: 'Token invalide'
         });
     }
 });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`Serveur démarré sur le port ${PORT}`);
+    console.log(`🚀 Serveur sur le port ${PORT}`);
 });
